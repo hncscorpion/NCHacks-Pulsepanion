@@ -16,30 +16,6 @@ Smart Summarization is a lightweight, AI-assisted tool designed to help caregive
 - PDF generation: pdfkit or WeasyPrint
 - Version control: Git + GitHub
 
-## Folder Structure
-
-smart_summarization/
-├── app.py # Main Streamlit app entry point
-├── .env # API keys and environment variables (not committed)
-├── requirements.txt # Python dependencies
-│
-├── data/ # Raw and merged CSV files
-│ ├── patient_x_jan_jun_2024.csv
-│ ├── patient_x_jul_dec_2024.csv
-│ ├── patient_x_jan_jun_2025.csv
-│ └── merged_patient_data.csv
-│
-├── outputs/ # Exported reports (PDFs, text)
-│ └── sample_report.pdf
-│
-├── utils/ # Helper modules for data and summarization
-│ ├── summarizer_llm.py # GPT-based summarization
-│ ├── summarizer_template.py # Rule-based summarization
-│ ├── data_utils.py # Data loading, merging, filtering
-│ └── export_pdf.py # PDF generation logic
-│
-└── README.md # Project overview and documentation
-
 ## Team
 
 | Role             | Name              | GitHub                          |
