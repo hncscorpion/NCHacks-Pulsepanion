@@ -4,7 +4,7 @@ import openai
 from datetime import datetime
 
 #starter code for llm 
-#basic loading of open api, ur guys job to paramterize llm and make it better 
+#basic loading of open api, ur guys job to paramterize llm and make it better (job for Mikhaela and Tommy) 
 
 # Set your OpenAI API key here or make sure it's set in your environment variables
 # Example: export OPENAI_API_KEY='your_api_key_here' in your shell
