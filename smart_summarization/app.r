@@ -1,9 +1,14 @@
 library(shiny)
+library(reticulate)
+
+# Import Python module from utils folder (adjust path as needed)
+template <- import_from_path("summarizer_template", path = "utils")
 
 # Initialize empty data
 full_data <- NULL
 original_data <- NULL
 date_col <- NULL
+summary_text <- ""
 
 ui <- fluidPage(
   tags$head(
@@ -52,44 +57,29 @@ server <- function(input, output, session) {
   # Function to process uploaded CSV
   process_csv <- function(file_path) {
     tryCatch({
-      # Read the CSV
       original_data <<- read.csv(file_path, stringsAsFactors = FALSE)
       full_data <<- original_data
       
       # Find date column
       date_col <<- NULL
       for(col in names(full_data)) {
-        if(grepl("date|Date|DATE", col, ignore.case = TRUE)) {
+        if(grepl("date", col, ignore.case = TRUE)) {
           date_col <<- col
           break
         }
       }
-      
-      # If no date column found, check first column
       if(is.null(date_col)) {
         date_col <<- names(full_data)[1]
       }
       
       # Parse dates
       full_data$Date <<- tryCatch({
-        # Try M/D/YYYY format first
         parsed <- as.Date(full_data[[date_col]], format = "%m/%d/%Y")
-        if(all(is.na(parsed))) {
-          # Try M/D/YY format
-          parsed <- as.Date(full_data[[date_col]], format = "%m/%d/%y")
-        }
-        if(all(is.na(parsed))) {
-          # Try YYYY-MM-DD format
-          parsed <- as.Date(full_data[[date_col]], format = "%Y-%m-%d")
-        }
-        if(all(is.na(parsed))) {
-          # Try automatic parsing
-          parsed <- as.Date(full_data[[date_col]])
-        }
+        if(all(is.na(parsed))) parsed <- as.Date(full_data[[date_col]], format = "%m/%d/%y")
+        if(all(is.na(parsed))) parsed <- as.Date(full_data[[date_col]], format = "%Y-%m-%d")
+        if(all(is.na(parsed))) parsed <- as.Date(full_data[[date_col]])
         parsed
-      }, error = function(e) {
-        rep(NA, nrow(full_data))
-      })
+      }, error = function(e) rep(NA, nrow(full_data)))
       
       return(TRUE)
     }, error = function(e) {
@@ -97,6 +87,10 @@ server <- function(input, output, session) {
       return(FALSE)
     })
   }
+  
+  # Reactive values for filtered data and summary
+  filtered_data <- reactiveVal(NULL)
+  summary_text <- reactiveVal("")
   
   output$main_ui <- renderUI({
     switch(page(),
@@ -122,11 +116,15 @@ server <- function(input, output, session) {
     )
   }
   
+  # The four page UI functions, now each with a "Generate Summary" button and output text for summary
   todayPageUI <- function() {
     tagList(
       h4("Data for Today:"),
       fileInput("today_file", "Upload CSV File:", accept = ".csv"),
       verbatimTextOutput("today_data"),
+      br(),
+      actionButton("summary_today", "Generate Summary", class = "btn-primary"),
+      verbatimTextOutput("summary_text_today"),
       br(),
       actionButton("back_today", "Back", class = "btn-secondary")
     )
@@ -138,6 +136,9 @@ server <- function(input, output, session) {
       fileInput("past7_file", "Upload CSV File:", accept = ".csv"),
       verbatimTextOutput("past7_data"),
       br(),
+      actionButton("summary_past7", "Generate Summary", class = "btn-primary"),
+      verbatimTextOutput("summary_text_past7"),
+      br(),
       actionButton("back_past7", "Back", class = "btn-secondary")
     )
   }
@@ -147,6 +148,9 @@ server <- function(input, output, session) {
       h4("Data for Past 30 Days:"),
       fileInput("past30_file", "Upload CSV File:", accept = ".csv"),
       verbatimTextOutput("past30_data"),
+      br(),
+      actionButton("summary_past30", "Generate Summary", class = "btn-primary"),
+      verbatimTextOutput("summary_text_past30"),
       br(),
       actionButton("back_past30", "Back", class = "btn-secondary")
     )
@@ -166,11 +170,14 @@ server <- function(input, output, session) {
       br(), br(),
       verbatimTextOutput("custom_data"),
       br(),
+      actionButton("summary_custom", "Generate Summary", class = "btn-primary"),
+      verbatimTextOutput("summary_text_custom"),
+      br(),
       actionButton("back_custom", "Back", class = "btn-secondary")
     )
   }
   
-  # Navigation
+  # Navigation buttons
   observeEvent(input$today_btn, { page("today") })
   observeEvent(input$past7_btn, { page("past7") })
   observeEvent(input$past30_btn, { page("past30") })
@@ -183,7 +190,7 @@ server <- function(input, output, session) {
   
   # File upload handlers
   output$file_uploaded <- reactive({
-    return(!is.null(input$custom_file))
+    !is.null(input$custom_file)
   })
   outputOptions(output, "file_uploaded", suspendWhenHidden = FALSE)
   
@@ -191,31 +198,36 @@ server <- function(input, output, session) {
     req(input$today_file)
     if(process_csv(input$today_file$datapath)) {
       showNotification("CSV uploaded successfully!", type = "message")
+      filtered_data(full_data)
+      summary_text("")
     }
   })
-  
   observeEvent(input$past7_file, {
     req(input$past7_file)
     if(process_csv(input$past7_file$datapath)) {
       showNotification("CSV uploaded successfully!", type = "message")
+      filtered_data(full_data)
+      summary_text("")
     }
   })
-  
   observeEvent(input$past30_file, {
     req(input$past30_file)
     if(process_csv(input$past30_file$datapath)) {
       showNotification("CSV uploaded successfully!", type = "message")
+      filtered_data(full_data)
+      summary_text("")
     }
   })
-  
   observeEvent(input$custom_file, {
     req(input$custom_file)
     if(process_csv(input$custom_file$datapath)) {
       showNotification("CSV uploaded successfully!", type = "message")
+      filtered_data(full_data)
+      summary_text("")
     }
   })
   
-  # Show all data button
+  # Show all data for custom page
   observeEvent(input$show_all_data, {
     req(full_data)
     output$custom_data <- renderPrint({
@@ -232,16 +244,16 @@ server <- function(input, output, session) {
       }
       cat("========================\n\n")
       
-      # Show first 50 rows of original data
       print(head(original_data, 50))
     })
   })
   
-  # Filter data and output for Today
+  # Filter & show data for each page
   output$today_data <- renderPrint({
     req(input$today_file, full_data)
     today <- Sys.Date()
     df <- full_data[!is.na(full_data$Date) & full_data$Date == today, ]
+    filtered_data(df)
     if (nrow(df) == 0) {
       cat("No data available for", format(today, "%m-%d-%Y"), "\n")
       if(sum(!is.na(full_data$Date)) > 0) {
@@ -253,14 +265,12 @@ server <- function(input, output, session) {
     }
   })
   
-  # Filter data and output for Past 7 Days
   output$past7_data <- renderPrint({
     req(input$past7_file, full_data)
     end_date <- Sys.Date()
     start_date <- end_date - 6
-    df <- full_data[!is.na(full_data$Date) & 
-                      full_data$Date >= start_date & 
-                      full_data$Date <= end_date, ]
+    df <- full_data[!is.na(full_data$Date) & full_data$Date >= start_date & full_data$Date <= end_date, ]
+    filtered_data(df)
     if (nrow(df) == 0) {
       cat("No data available for past 7 days ending", format(end_date, "%m-%d-%Y"), "\n")
       if(sum(!is.na(full_data$Date)) > 0) {
@@ -272,14 +282,12 @@ server <- function(input, output, session) {
     }
   })
   
-  # Filter data and output for Past 30 Days
   output$past30_data <- renderPrint({
     req(input$past30_file, full_data)
     end_date <- Sys.Date()
     start_date <- end_date - 29
-    df <- full_data[!is.na(full_data$Date) & 
-                      full_data$Date >= start_date & 
-                      full_data$Date <= end_date, ]
+    df <- full_data[!is.na(full_data$Date) & full_data$Date >= start_date & full_data$Date <= end_date, ]
+    filtered_data(df)
     if (nrow(df) == 0) {
       cat("No data available for past 30 days ending", format(end_date, "%m-%d-%Y"), "\n")
       if(sum(!is.na(full_data$Date)) > 0) {
@@ -291,16 +299,12 @@ server <- function(input, output, session) {
     }
   })
   
-  # Filter data and output for Custom date range
   output$custom_data <- renderPrint({
     req(input$custom_file, input$custom_date, input$custom_end_date, full_data)
     start_date <- as.Date(input$custom_date)
     end_date <- as.Date(input$custom_end_date)
-    
-    # Filter data
-    df <- full_data[!is.na(full_data$Date) & 
-                      full_data$Date >= start_date & 
-                      full_data$Date <= end_date, ]
+    df <- full_data[!is.na(full_data$Date) & full_data$Date >= start_date & full_data$Date <= end_date, ]
+    filtered_data(df)
     
     cat("=== CUSTOM DATE RANGE RESULTS ===\n")
     cat("Selected range:", format(start_date, "%m-%d-%Y"), "to", format(end_date, "%m-%d-%Y"), "\n")
@@ -320,13 +324,9 @@ server <- function(input, output, session) {
     } else {
       cat("Showing", min(50, nrow(df)), "records:\n")
       cat("=======================\n")
-      
-      # Show data in a readable format
       for(i in 1:min(50, nrow(df))) {
         row <- df[i, ]
         cat("Record", i, "- Date:", format(row$Date, "%m-%d-%Y"))
-        
-        # Show other meaningful columns
         for(col in names(row)) {
           if(col != "Date" && col != date_col && !is.na(row[[col]]) && row[[col]] != "") {
             cat(" |", col, ":", row[[col]])
@@ -334,11 +334,83 @@ server <- function(input, output, session) {
         }
         cat("\n")
       }
-      
       if(nrow(df) > 50) {
         cat("... and", nrow(df) - 50, "more records\n")
       }
     }
+  })
+  
+  # Generate summaries by calling the Python function
+  observeEvent(input$summary_today, {
+    df <- filtered_data()
+    if (!is.null(df) && nrow(df) > 0) {
+      summary <- tryCatch({
+        template$generate_template_summary(df)
+      }, error = function(e) {
+        paste("Error generating summary:", e$message)
+      })
+      summary_text(summary)
+    } else {
+      summary_text("No data available to summarize.")
+    }
+  })
+  
+  output$summary_text_today <- renderText({
+    summary_text()
+  })
+  
+  observeEvent(input$summary_past7, {
+    df <- filtered_data()
+    if (!is.null(df) && nrow(df) > 0) {
+      summary <- tryCatch({
+        template$generate_template_summary(df)
+      }, error = function(e) {
+        paste("Error generating summary:", e$message)
+      })
+      summary_text(summary)
+    } else {
+      summary_text("No data available to summarize.")
+    }
+  })
+  
+  output$summary_text_past7 <- renderText({
+    summary_text()
+  })
+  
+  observeEvent(input$summary_past30, {
+    df <- filtered_data()
+    if (!is.null(df) && nrow(df) > 0) {
+      summary <- tryCatch({
+        template$generate_template_summary(df)
+      }, error = function(e) {
+        paste("Error generating summary:", e$message)
+      })
+      summary_text(summary)
+    } else {
+      summary_text("No data available to summarize.")
+    }
+  })
+  
+  output$summary_text_past30 <- renderText({
+    summary_text()
+  })
+  
+  observeEvent(input$summary_custom, {
+    df <- filtered_data()
+    if (!is.null(df) && nrow(df) > 0) {
+      summary <- tryCatch({
+        template$generate_template_summary(df)
+      }, error = function(e) {
+        paste("Error generating summary:", e$message)
+      })
+      summary_text(summary)
+    } else {
+      summary_text("No data available to summarize.")
+    }
+  })
+  
+  output$summary_text_custom <- renderText({
+    summary_text()
   })
 }
 
