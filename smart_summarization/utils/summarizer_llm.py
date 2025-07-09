@@ -3,9 +3,12 @@ import pandas as pd
 import openai
 from datetime import datetime
 
+#starter code for llm 
+#basic loading of open api, ur guys job to paramterize llm and make it better 
+
 # Set your OpenAI API key here or make sure it's set in your environment variables
 # Example: export OPENAI_API_KEY='your_api_key_here' in your shell
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY") #a key should be like sk ############ 
 
 def generate_llm_summary(data):
     # Prepare prompt with patient data as a string
