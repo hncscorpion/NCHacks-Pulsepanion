@@ -1,6 +1,9 @@
 library(shiny)
 library(reticulate)
 
+# Import Python module from utils folder (adjust path as needed)
+template <- import_from_path("summarizer_template", path = "utils")
+
 # Initialize empty data
 full_data <- NULL
 original_data <- NULL
