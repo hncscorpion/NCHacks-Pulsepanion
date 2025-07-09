@@ -15,17 +15,6 @@ Smart Summarization is a lightweight, AI-assisted tool designed to help caregive
 - PDF generation: pdfkit or WeasyPrint
 - Version control: Git + GitHub
 
-## Team
-
-| Role             | Name              | GitHub                          |
-|------------------|-------------------|----------------------------------|
-| Supervisor       | Prof. Hutchings   | —                                |
-| Team Captain     | Kyle Shiroma      | [k-shiroma-code](https://github.com/k-shiroma-code) |
-| Data Scientist A | Mikhaela Lewis    | [mjlewis-seq](https://github.com/mjlewis-seq) |
-| Data Scientist B | TBD               | —                                |
-| Programmer A     | TBD               | —                                |
-| Programmer B     | Ryan Manuel       | [hncscorpion](https://github.com/hncscorpion) |
-
 ## Project Goal
 
 Build a working prototype by July 13, 2025, including:
