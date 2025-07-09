@@ -417,7 +417,7 @@ server <- function(input, output, session) {
   output$summary_text_custom <- renderText({
     summary_text()
     
-    # PDF Export
+    # PDF Export <---------------------
     content = function(file) {
       tempReport <- tempfile(fileext = ".Rmd")
       writeLines(c(
