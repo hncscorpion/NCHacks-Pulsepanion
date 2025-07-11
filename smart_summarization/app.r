@@ -427,6 +427,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   page <- reactiveVal("main")
+  previous_page <- reactiveVal("main")
   
   # Function to process uploaded CSV
   process_csv <- function(file_path) {
@@ -489,7 +490,8 @@ server <- function(input, output, session) {
     charts_html <- '<div class="charts-container">'
     
     # Heart Rate Chart
-    if(!all(is.na(df$hr_avg))) {
+    hr_cols_exist <- any(c("hr_avg", "hr_min", "hr_max") %in% names(df))
+    if(hr_cols_exist && !all(is.na(df$hr_avg))) {
       charts_html <- paste0(charts_html,
                             '<div class="chart-card">',
                             '<div class="chart-title">💓 Heart Rate Trends</div>',
@@ -499,7 +501,9 @@ server <- function(input, output, session) {
     }
     
     # Sleep Chart
-    if(!all(is.na(df$sleep_total))) {
+    sleep_cols_exist <- any(c("sleep_total", "sleep_light", "sleep_deep", "sleep_rem") %in% names(df))
+    if(sleep_cols_exist && (!all(is.na(df$sleep_total)) || 
+                            any(!is.na(df[c("sleep_light", "sleep_deep", "sleep_rem")[c("sleep_light", "sleep_deep", "sleep_rem") %in% names(df)]])))) {
       charts_html <- paste0(charts_html,
                             '<div class="chart-card">',
                             '<div class="chart-title">😴 Sleep Analysis</div>',
@@ -509,7 +513,7 @@ server <- function(input, output, session) {
     }
     
     # Activity Chart
-    if(!all(is.na(df$act_cat))) {
+    if("act_cat" %in% names(df) && !all(is.na(df$act_cat))) {
       charts_html <- paste0(charts_html,
                             '<div class="chart-card">',
                             '<div class="chart-title">📊 Activity Categories</div>',
@@ -519,7 +523,7 @@ server <- function(input, output, session) {
     }
     
     # Breathing Chart
-    if(!all(is.na(df$br_avg))) {
+    if("br_avg" %in% names(df) && !all(is.na(df$br_avg))) {
       charts_html <- paste0(charts_html,
                             '<div class="chart-card">',
                             '<div class="chart-title">🫁 Breathing Rate</div>',
@@ -533,19 +537,21 @@ server <- function(input, output, session) {
     # Add JavaScript for charts
     charts_html <- paste0(charts_html, '<script>')
     
-    if(!all(is.na(df$hr_avg))) {
+    hr_cols_exist <- any(c("hr_avg", "hr_min", "hr_max") %in% names(df))
+    if(hr_cols_exist && !all(is.na(df$hr_avg))) {
       charts_html <- paste0(charts_html, create_heart_rate_js(df, chart_id_hr))
     }
     
-    if(!all(is.na(df$sleep_total))) {
+    sleep_cols_exist <- any(c("sleep_total", "sleep_light", "sleep_deep", "sleep_rem") %in% names(df))
+    if(sleep_cols_exist) {
       charts_html <- paste0(charts_html, create_sleep_js(df, chart_id_sleep))
     }
     
-    if(!all(is.na(df$act_cat))) {
+    if("act_cat" %in% names(df) && !all(is.na(df$act_cat))) {
       charts_html <- paste0(charts_html, create_activity_js(df, chart_id_activity))
     }
     
-    if(!all(is.na(df$br_avg))) {
+    if("br_avg" %in% names(df) && !all(is.na(df$br_avg))) {
       charts_html <- paste0(charts_html, create_breathing_js(df, chart_id_breathing))
     }
     
@@ -556,13 +562,23 @@ server <- function(input, output, session) {
   
   # Heart Rate Interactive Chart JavaScript
   create_heart_rate_js <- function(df, chart_id) {
+    # Check if heart rate columns exist
+    hr_cols_exist <- any(c("hr_avg", "hr_min", "hr_max") %in% names(df))
+    if(!hr_cols_exist) return("")
+    
     valid_data <- df[!is.na(df$hr_avg), ]
     if(nrow(valid_data) == 0) return("")
     
     dates <- format(valid_data$Date, "%m-%d")
-    hr_min <- valid_data$hr_min
-    hr_max <- valid_data$hr_max
+    
+    # Handle missing HR columns with defaults
+    hr_min <- if("hr_min" %in% names(valid_data)) valid_data$hr_min else valid_data$hr_avg
+    hr_max <- if("hr_max" %in% names(valid_data)) valid_data$hr_max else valid_data$hr_avg
     hr_avg <- valid_data$hr_avg
+    
+    # Replace NAs with average where possible
+    hr_min[is.na(hr_min)] <- hr_avg[is.na(hr_min)]
+    hr_max[is.na(hr_max)] <- hr_avg[is.na(hr_max)]
     
     # Create safe JavaScript arrays
     labels_js <- paste0('["', paste(dates, collapse = '","'), '"]')
@@ -617,7 +633,15 @@ server <- function(input, output, session) {
                 },
                 tooltip: {
                   mode: "index",
-                  intersect: false
+                  intersect: false,
+                  callbacks: {
+                    title: function(context) {
+                      return "Date: " + context[0].label;
+                    },
+                    label: function(context) {
+                      return context.dataset.label + ": " + context.parsed.y + " BPM";
+                    }
+                  }
                 }
               },
               scales: {
@@ -633,7 +657,8 @@ server <- function(input, output, session) {
                   title: {
                     display: true,
                     text: "BPM"
-                  }
+                  },
+                  beginAtZero: false
                 }
               }
             }
@@ -647,13 +672,54 @@ server <- function(input, output, session) {
   
   # Sleep Interactive Chart JavaScript
   create_sleep_js <- function(df, chart_id) {
-    valid_data <- df[!is.na(df$sleep_total), ]
+    # Check if any sleep columns exist
+    sleep_cols <- c("sleep_total", "sleep_light", "sleep_deep", "sleep_rem")
+    existing_sleep_cols <- sleep_cols[sleep_cols %in% names(df)]
+    
+    if(length(existing_sleep_cols) == 0) return("")
+    
+    # If we have sleep_total but no breakdown, use sleep_total
+    if("sleep_total" %in% names(df)) {
+      valid_data <- df[!is.na(df$sleep_total), ]
+    } else {
+      # Otherwise use any available sleep data
+      valid_data <- df
+      for(col in existing_sleep_cols) {
+        valid_data <- valid_data[!is.na(valid_data[[col]]), ]
+      }
+    }
+    
     if(nrow(valid_data) == 0) return("")
     
     dates <- format(valid_data$Date, "%m-%d")
-    sleep_light <- valid_data$sleep_light
-    sleep_deep <- valid_data$sleep_deep
-    sleep_rem <- valid_data$sleep_rem
+    
+    # Handle missing sleep columns with defaults
+    if("sleep_light" %in% names(valid_data)) {
+      sleep_light <- valid_data$sleep_light
+      sleep_light[is.na(sleep_light)] <- 0
+    } else if("sleep_total" %in% names(valid_data)) {
+      sleep_light <- valid_data$sleep_total * 0.6  # Assume 60% light sleep
+    } else {
+      sleep_light <- rep(0, nrow(valid_data))
+    }
+    
+    if("sleep_deep" %in% names(valid_data)) {
+      sleep_deep <- valid_data$sleep_deep
+      sleep_deep[is.na(sleep_deep)] <- 0
+    } else if("sleep_total" %in% names(valid_data)) {
+      sleep_deep <- valid_data$sleep_total * 0.25  # Assume 25% deep sleep
+    } else {
+      sleep_deep <- rep(0, nrow(valid_data))
+    }
+    
+    if("sleep_rem" %in% names(valid_data)) {
+      sleep_rem <- valid_data$sleep_rem
+      sleep_rem[is.na(sleep_rem)] <- 0
+    } else if("sleep_total" %in% names(valid_data)) {
+      sleep_rem <- valid_data$sleep_total * 0.15  # Assume 15% REM sleep
+    } else {
+      sleep_rem <- rep(0, nrow(valid_data))
+    }
     
     # Create safe JavaScript arrays
     labels_js <- paste0('["', paste(dates, collapse = '","'), '"]')
@@ -702,7 +768,15 @@ server <- function(input, output, session) {
                 },
                 tooltip: {
                   mode: "index",
-                  intersect: false
+                  intersect: false,
+                  callbacks: {
+                    title: function(context) {
+                      return "Date: " + context[0].label;
+                    },
+                    label: function(context) {
+                      return context.dataset.label + ": " + context.parsed.y.toFixed(1) + " hours";
+                    }
+                  }
                 }
               },
               scales: {
@@ -718,7 +792,8 @@ server <- function(input, output, session) {
                   title: {
                     display: true,
                     text: "Hours"
-                  }
+                  },
+                  beginAtZero: true
                 }
               }
             }
@@ -732,6 +807,9 @@ server <- function(input, output, session) {
   
   # Activity Interactive Chart JavaScript
   create_activity_js <- function(df, chart_id) {
+    # Check if activity column exists
+    if(!"act_cat" %in% names(df)) return("")
+    
     activities <- table(df$act_cat[!is.na(df$act_cat) & df$act_cat != ""])
     if(length(activities) == 0) return("")
     
@@ -793,6 +871,9 @@ server <- function(input, output, session) {
   
   # Breathing Interactive Chart JavaScript
   create_breathing_js <- function(df, chart_id) {
+    # Check if breathing column exists
+    if(!"br_avg" %in% names(df)) return("")
+    
     valid_data <- df[!is.na(df$br_avg), ]
     if(nrow(valid_data) == 0) return("")
     
@@ -861,7 +942,8 @@ server <- function(input, output, session) {
                   title: {
                     display: true,
                     text: "Breaths/min"
-                  }
+                  },
+                  beginAtZero: true
                 }
               }
             }
@@ -879,7 +961,8 @@ server <- function(input, output, session) {
            "today" = todayPageUI(),
            "past7" = past7PageUI(),
            "past30" = past30PageUI(),
-           "custom" = customPageUI()
+           "custom" = customPageUI(),
+           "alldata" = allDataPageUI()
     )
   })
   
@@ -994,6 +1077,22 @@ server <- function(input, output, session) {
     )
   }
   
+  allDataPageUI <- function() {
+    tagList(
+      div(class = "page-title-container",
+          div(class = "page-title", "Patient Data: Full Dataset")
+      ),
+      div(class = "content-card",
+          div(class = "text-data",
+              verbatimTextOutput("all_data")
+          ),
+          uiOutput("all_data_charts"),
+          br(),
+          actionButton("back_all_data", "← Back to Custom Range", class = "btn-secondary")
+      )
+    )
+  }
+  
   # Navigation
   observeEvent(input$today_btn, { page("today") })
   observeEvent(input$past7_btn, { page("past7") })
@@ -1004,6 +1103,15 @@ server <- function(input, output, session) {
   observeEvent(input$back_past7, { page("main") })
   observeEvent(input$back_past30, { page("main") })
   observeEvent(input$back_custom, { page("main") })
+  
+  # Navigation to and from all data page
+  observeEvent(input$show_all_data, { 
+    previous_page("custom")
+    page("alldata") 
+  })
+  observeEvent(input$back_all_data, { 
+    page(previous_page()) 
+  })
   
   # File upload handlers
   output$file_uploaded <- reactive({
@@ -1039,52 +1147,52 @@ server <- function(input, output, session) {
     }
   })
   
-  # Show all data button
-  observeEvent(input$show_all_data, {
+  # Show all data on separate page
+  output$all_data <- renderPrint({
     req(full_data)
-    output$custom_data <- renderPrint({
-      cat("=== FULL DATA PREVIEW ===\n")
-      cat("Total rows:", nrow(original_data), "\n")
-      cat("Column names:", paste(names(original_data), collapse = ", "), "\n")
-      cat("Date column used:", date_col, "\n")
-      if(!is.null(date_col)) {
-        cat("Raw date values:", paste(head(original_data[[date_col]], 10), collapse = ", "), "\n")
-      }
-      cat("Successfully parsed dates:", sum(!is.na(full_data$Date)), "out of", nrow(full_data), "\n")
-      if(sum(!is.na(full_data$Date)) > 0) {
-        min_date <- min(full_data$Date, na.rm = TRUE)
-        max_date <- max(full_data$Date, na.rm = TRUE)
-        cat("Date range:", as.character(min_date), "to", as.character(max_date), "\n")
-      }
-      cat("========================\n\n")
-      
-      # Generate interactive charts for all data
-      output$custom_charts <- renderUI({
-        HTML(generate_interactive_charts(head(full_data, 100), "preview"))
-      })
-      
-      # Show sample records
-      for(i in 1:min(10, nrow(original_data))) {
-        row <- original_data[i, ]
-        cat("=== Record", i, "===\n")
-        if(!is.null(date_col)) {
-          cat("Date:", row[[date_col]], "\n")
-        }
-        
-        # Show key columns only
-        key_cols <- c("hr_min", "hr_max", "hr_avg", "sleep_total", "act_desc", "obs_desc")
-        for(col in key_cols) {
-          if(col %in% names(row) && !is.na(row[[col]]) && row[[col]] != "") {
-            cat(col, ":", row[[col]], "\n")
-          }
-        }
-        cat("\n")
-      }
-      
-      if(nrow(original_data) > 10) {
-        cat("... and", nrow(original_data) - 10, "more records\n")
-      }
+    cat("=== COMPLETE DATASET ===\n")
+    cat("Total rows:", nrow(original_data), "\n")
+    cat("Column names:", paste(names(original_data), collapse = ", "), "\n")
+    cat("Date column used:", date_col, "\n")
+    if(!is.null(date_col)) {
+      cat("Raw date values:", paste(head(original_data[[date_col]], 10), collapse = ", "), "\n")
+    }
+    cat("Successfully parsed dates:", sum(!is.na(full_data$Date)), "out of", nrow(full_data), "\n")
+    if(sum(!is.na(full_data$Date)) > 0) {
+      min_date <- min(full_data$Date, na.rm = TRUE)
+      max_date <- max(full_data$Date, na.rm = TRUE)
+      cat("Date range:", as.character(min_date), "to", as.character(max_date), "\n")
+    }
+    cat("========================\n\n")
+    
+    # Generate interactive charts for ALL data (complete dataset)
+    output$all_data_charts <- renderUI({
+      HTML(generate_interactive_charts(full_data, "alldata"))
     })
+    
+    # Show ALL records
+    cat("DISPLAYING ALL", nrow(original_data), "RECORDS:\n")
+    cat("========================================\n\n")
+    
+    for(i in 1:nrow(original_data)) {
+      row <- original_data[i, ]
+      cat("=== Record", i, "===\n")
+      if(!is.null(date_col)) {
+        cat("Date:", row[[date_col]], "\n")
+      }
+      
+      # Show key columns only
+      key_cols <- c("hr_min", "hr_max", "hr_avg", "sleep_total", "act_desc", "obs_desc")
+      for(col in key_cols) {
+        if(col %in% names(row) && !is.na(row[[col]]) && row[[col]] != "") {
+          cat(col, ":", row[[col]], "\n")
+        }
+      }
+      cat("\n")
+    }
+    
+    cat("========================================\n")
+    cat("END OF DATASET -", nrow(original_data), "total records displayed\n")
   })
   
   # Filter data and output for Today
