@@ -259,14 +259,6 @@ ui <- fluidPage(
         }
       }
       
-      .charts-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 30px;
-        margin: 40px 0;
-        animation: chartsSlideIn 1s ease-out 0.8s both;
-      }
-      
       @keyframes chartsSlideIn {
         from {
           opacity: 0;
@@ -603,8 +595,177 @@ ui <- fluidPage(
         border-radius: 4px;
       }
       
-      .text-data::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      .overview-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin: 30px auto;
+        max-width: 1200px;
+        padding: 0 20px;
+        animation: overviewSlideIn 1s ease-out 0.7s both;
+      }
+      
+      .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 30px;
+        margin: 40px auto;
+        max-width: 1400px;
+        padding: 0 20px;
+        animation: chartsSlideIn 1s ease-out 0.8s both;
+      }
+      
+      .show-all-data-container {
+        text-align: center;
+        margin: 30px auto;
+        max-width: 600px;
+        animation: fadeInScale 1s ease-out 0.6s both;
+      }
+      
+      @keyframes overviewSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .overview-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 100%);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+      }
+      
+      .overview-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.1), transparent);
+        animation: overviewShimmer 3s ease infinite;
+      }
+      
+      @keyframes overviewShimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+      
+      .overview-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      }
+      
+      .overview-card .card-icon {
+        font-size: 2.5em;
+        margin-bottom: 15px;
+        display: block;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .overview-card .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .overview-card .card-value {
+        font-size: 2.2em;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 5px;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .overview-card .card-subtitle {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .overview-header {
+        text-align: center;
+        margin: 30px 0 40px 0;
+        animation: fadeInDown 1s ease-out 0.4s both;
+      }
+      
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .overview-header h2 {
+        font-size: 2.2em;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .overview-header p {
+        font-size: 16px;
+        color: #64748b;
+        margin: 0;
+        font-weight: 500;
+      }
+      
+      .date-range-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 10px 0;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        animation: badgeFloat 2s ease-in-out infinite;
+      }
+      
+      @keyframes badgeFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-3px); }
+      }
+      
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       
       .shiny-notification {
@@ -631,15 +792,6 @@ ui <- fluidPage(
       
       .shiny-notification-content {
         padding: 15px 20px;
-      }
-      
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
       }
       
       .text-data {
@@ -732,6 +884,29 @@ ui <- fluidPage(
         .charts-container {
           grid-template-columns: 1fr;
           gap: 20px;
+          padding: 0 10px;
+        }
+        
+        .overview-container {
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 20px;
+          padding: 0 10px;
+        }
+        
+        .overview-card {
+          padding: 25px;
+        }
+        
+        .overview-card .card-value {
+          font-size: 1.8em;
+        }
+        
+        .overview-header h2 {
+          font-size: 1.8em;
+        }
+        
+        .show-all-data-container {
+          padding: 0 10px;
         }
         
         .file-input-large input[type='file'] {
@@ -1414,12 +1589,11 @@ server <- function(input, output, session) {
                     dateInput("custom_end_date", "End Date:", format = "mm-dd-yyyy")
                 )
             ),
-            br(),
-            actionButton("show_all_data", "📊 Show All Data", class = "btn-info")
+            div(class = "show-all-data-container",
+                actionButton("show_all_data", "📊 Show All Data", class = "btn-info")
+            )
           ),
-          div(class = "text-data",
-              verbatimTextOutput("custom_data")
-          ),
+          uiOutput("custom_overview"),
           uiOutput("custom_charts"),
           div(class = "generate-summary-container",
               actionButton("generate_summary_custom", "✨ Generate Summary", class = "generate-summary-btn")
@@ -1436,9 +1610,7 @@ server <- function(input, output, session) {
           div(class = "page-title", "Complete Dataset Overview")
       ),
       div(class = "content-card",
-          div(class = "text-data",
-              verbatimTextOutput("all_data")
-          ),
+          uiOutput("all_data_overview"),
           uiOutput("all_data_charts"),
           div(class = "generate-summary-container",
               actionButton("generate_summary_all", "✨ Generate Summary", class = "generate-summary-btn")
@@ -1484,56 +1656,113 @@ server <- function(input, output, session) {
     }
   })
   
-  # Show all data on separate page
-  output$all_data <- renderPrint({
+  # Modern overview for All data page
+  output$all_data_overview <- renderUI({
     req(full_data)
-    cat("=== COMPLETE DATASET ===\n")
-    cat("Total rows:", nrow(original_data), "\n")
-    cat("Column names:", paste(names(original_data), collapse = ", "), "\n")
-    cat("Date column used:", date_col, "\n")
-    if(!is.null(date_col)) {
-      cat("Raw date values:", paste(head(original_data[[date_col]], 10), collapse = ", "), "\n")
+    
+    if (nrow(full_data) == 0) {
+      return(
+        div(class = "overview-header",
+            h2("No Data Available"),
+            p("Please upload a CSV file to begin analysis.")
+        )
+      )
     }
-    cat("Successfully parsed dates:", sum(!is.na(full_data$Date)), "out of", nrow(full_data), "\n")
-    if(sum(!is.na(full_data$Date)) > 0) {
+    
+    # Calculate overview metrics for entire dataset
+    total_records <- nrow(original_data)
+    valid_dates <- sum(!is.na(full_data$Date))
+    
+    # Date range
+    date_range_text <- if(valid_dates > 0) {
       min_date <- min(full_data$Date, na.rm = TRUE)
       max_date <- max(full_data$Date, na.rm = TRUE)
-      cat("Date range:", as.character(min_date), "to", as.character(max_date), "\n")
-    }
-    cat("========================\n\n")
-    
-    # Generate interactive charts for ALL data (complete dataset)
-    output$all_data_charts <- renderUI({
-      HTML(generate_interactive_charts(full_data, "alldata"))
-    })
-    
-    # Show ALL records
-    cat("DISPLAYING ALL", nrow(original_data), "RECORDS:\n")
-    cat("========================================\n\n")
-    
-    for(i in 1:nrow(original_data)) {
-      row <- original_data[i, ]
-      cat("=== Record", i, "===\n")
-      if(!is.null(date_col)) {
-        cat("Date:", row[[date_col]], "\n")
-      }
-      
-      # Show key columns only
-      key_cols <- c("hr_min", "hr_max", "hr_avg", "sleep_total", "act_desc", "obs_desc")
-      for(col in key_cols) {
-        if(col %in% names(row) && !is.na(row[[col]]) && row[[col]] != "") {
-          cat(col, ":", row[[col]], "\n")
-        }
-      }
-      cat("\n")
+      paste(format(min_date, "%m/%d/%Y"), "-", format(max_date, "%m/%d/%Y"))
+    } else {
+      "No valid dates found"
     }
     
-    cat("========================================\n")
-    cat("END OF DATASET -", nrow(original_data), "total records displayed\n")
+    # Heart rate metrics
+    avg_hr <- if(!all(is.na(full_data$hr_avg))) round(mean(full_data$hr_avg, na.rm = TRUE), 0) else "N/A"
+    hr_range <- if(!all(is.na(full_data$hr_min)) && !all(is.na(full_data$hr_max))) {
+      paste(round(min(full_data$hr_min, na.rm = TRUE), 0), "-", round(max(full_data$hr_max, na.rm = TRUE), 0))
+    } else "N/A"
+    
+    # Sleep metrics
+    avg_sleep <- if(!all(is.na(full_data$sleep_total))) paste(round(mean(full_data$sleep_total, na.rm = TRUE), 1), "hrs") else "N/A"
+    
+    # Activity count
+    activity_count <- if(!all(is.na(full_data$act_cat))) length(unique(full_data$act_cat[!is.na(full_data$act_cat)])) else 0
+    
+    # Breathing rate
+    avg_breathing <- if(!all(is.na(full_data$br_avg))) round(mean(full_data$br_avg, na.rm = TRUE), 1) else "N/A"
+    
+    # Data completeness
+    completeness <- round((valid_dates / total_records) * 100, 1)
+    
+    tagList(
+      div(class = "overview-header",
+          h2("Complete Dataset Analysis"),
+          p("Comprehensive summary of all health data in your dataset"),
+          div(class = "date-range-badge", date_range_text)
+      ),
+      div(class = "overview-container",
+          div(class = "overview-card",
+              span(class = "card-icon", "📊"),
+              div(class = "card-title", "Total Records"),
+              div(class = "card-value", total_records),
+              div(class = "card-subtitle", paste(completeness, "% with valid dates"))
+          ),
+          div(class = "overview-card",
+              span(class = "card-icon", "💓"),
+              div(class = "card-title", "Heart Rate"),
+              div(class = "card-value", avg_hr),
+              div(class = "card-subtitle", if(hr_range != "N/A") paste("Range:", hr_range, "BPM") else "Average BPM")
+          ),
+          div(class = "overview-card",
+              span(class = "card-icon", "😴"),
+              div(class = "card-title", "Sleep Average"),
+              div(class = "card-value", avg_sleep),
+              div(class = "card-subtitle", "per night")
+          ),
+          div(class = "overview-card",
+              span(class = "card-icon", "🏃"),
+              div(class = "card-title", "Activities"),
+              div(class = "card-value", activity_count),
+              div(class = "card-subtitle", "unique categories")
+          ),
+          if(avg_breathing != "N/A") {
+            div(class = "overview-card",
+                span(class = "card-icon", "🫁"),
+                div(class = "card-title", "Breathing Rate"),
+                div(class = "card-value", avg_breathing),
+                div(class = "card-subtitle", "breaths/min average")
+            )
+          },
+          div(class = "overview-card",
+              span(class = "card-icon", "📅"),
+              div(class = "card-title", "Data Span"),
+              div(class = "card-value", if(valid_dates > 0) paste(as.numeric(difftime(max(full_data$Date, na.rm = TRUE), min(full_data$Date, na.rm = TRUE), units = "days")), "days") else "N/A"),
+              div(class = "card-subtitle", "total time period")
+          )
+      )
+    )
   })
   
-  # Filter data and output for Custom date range
-  output$custom_data <- renderPrint({
+  # Generate charts for all data
+  observe({
+    req(full_data)
+    output$all_data_charts <- renderUI({
+      if(nrow(full_data) > 0) {
+        HTML(generate_interactive_charts(full_data, "alldata"))
+      } else {
+        NULL
+      }
+    })
+  })
+  
+  # Modern overview for Custom date range
+  output$custom_overview <- renderUI({
     req(input$custom_file, input$custom_date, input$custom_end_date, full_data)
     start_date <- as.Date(input$custom_date)
     end_date <- as.Date(input$custom_end_date)
@@ -1543,56 +1772,98 @@ server <- function(input, output, session) {
                       full_data$Date >= start_date & 
                       full_data$Date <= end_date, ]
     
-    cat("=== CUSTOM DATE RANGE RESULTS ===\n")
-    cat("Selected range:", format(start_date, "%m-%d-%Y"), "to", format(end_date, "%m-%d-%Y"), "\n")
-    cat("Total records in dataset:", nrow(full_data), "\n")
-    cat("Records with valid dates:", sum(!is.na(full_data$Date)), "\n")
-    valid_dates_count <- sum(!is.na(full_data$Date))
-    if(valid_dates_count > 0) {
-      min_date <- min(full_data$Date, na.rm = TRUE)
-      max_date <- max(full_data$Date, na.rm = TRUE)
-      cat("Available date range:", as.character(min_date), "to", as.character(max_date), "\n")
-    }
-    cat("Records found in selected range:", nrow(df), "\n")
-    cat("================================\n\n")
-    
     if (nrow(df) == 0) {
-      cat("No data found in the selected date range.\n")
-      if(valid_dates_count > 0) {
-        min_date <- min(full_data$Date, na.rm = TRUE)
-        max_date <- max(full_data$Date, na.rm = TRUE)
-        cat("Try selecting dates between", as.character(min_date), "and", as.character(max_date), "\n")
-      }
-      
-      # Clear charts
-      output$custom_charts <- renderUI({ NULL })
-    } else {
-      # Show summary statistics
-      if(!all(is.na(df$hr_avg))) {
-        cat("Heart Rate - Avg:", round(mean(df$hr_avg, na.rm = TRUE), 1), 
-            "| Range:", round(min(df$hr_min, na.rm = TRUE), 1), "-", round(max(df$hr_max, na.rm = TRUE), 1), "BPM\n")
-      }
-      
-      if(!all(is.na(df$sleep_total))) {
-        cat("Sleep - Avg Total:", round(mean(df$sleep_total, na.rm = TRUE), 1), "hrs",
-            "| Avg Deep:", round(mean(df$sleep_deep, na.rm = TRUE), 1), "hrs\n")
-      }
-      
-      if(!all(is.na(df$act_cat))) {
-        activities <- table(df$act_cat[!is.na(df$act_cat)])
-        cat("Activities:", paste(names(activities), "(", activities, ")", collapse = ", "), "\n")
-      }
-      
-      cat("====================\n\n")
-      
-      # Generate interactive charts
-      output$custom_charts <- renderUI({
-        HTML(generate_interactive_charts(df, "custom"))
-      })
-      
-      cat("Interactive charts generated above for your selected date range.\n")
-      cat("Scroll up to explore detailed visualizations of your health data.\n")
+      return(
+        div(class = "overview-header",
+            h2("No Data Found"),
+            p("No records available for the selected date range."),
+            div(class = "date-range-badge",
+                paste("Selected:", format(start_date, "%m/%d/%Y"), "-", format(end_date, "%m/%d/%Y"))
+            )
+        )
+      )
     }
+    
+    # Calculate overview metrics
+    total_records <- nrow(df)
+    date_range_text <- paste(format(start_date, "%m/%d/%Y"), "-", format(end_date, "%m/%d/%Y"))
+    
+    # Heart rate metrics
+    avg_hr <- if(!all(is.na(df$hr_avg))) round(mean(df$hr_avg, na.rm = TRUE), 0) else "N/A"
+    hr_range <- if(!all(is.na(df$hr_min)) && !all(is.na(df$hr_max))) {
+      paste(round(min(df$hr_min, na.rm = TRUE), 0), "-", round(max(df$hr_max, na.rm = TRUE), 0))
+    } else "N/A"
+    
+    # Sleep metrics
+    avg_sleep <- if(!all(is.na(df$sleep_total))) paste(round(mean(df$sleep_total, na.rm = TRUE), 1), "hrs") else "N/A"
+    
+    # Activity count
+    activity_count <- if(!all(is.na(df$act_cat))) length(unique(df$act_cat[!is.na(df$act_cat)])) else 0
+    
+    # Breathing rate
+    avg_breathing <- if(!all(is.na(df$br_avg))) round(mean(df$br_avg, na.rm = TRUE), 1) else "N/A"
+    
+    tagList(
+      div(class = "overview-header",
+          h2("Data Overview"),
+          p("Summary of your health metrics for the selected period"),
+          div(class = "date-range-badge", date_range_text)
+      ),
+      div(class = "overview-container",
+          div(class = "overview-card",
+              span(class = "card-icon", "📊"),
+              div(class = "card-title", "Total Records"),
+              div(class = "card-value", total_records),
+              div(class = "card-subtitle", "data points analyzed")
+          ),
+          div(class = "overview-card",
+              span(class = "card-icon", "💓"),
+              div(class = "card-title", "Heart Rate"),
+              div(class = "card-value", avg_hr),
+              div(class = "card-subtitle", if(hr_range != "N/A") paste("Range:", hr_range, "BPM") else "Average BPM")
+          ),
+          div(class = "overview-card",
+              span(class = "card-icon", "😴"),
+              div(class = "card-title", "Sleep Average"),
+              div(class = "card-value", avg_sleep),
+              div(class = "card-subtitle", "per night")
+          ),
+          div(class = "overview-card",
+              span(class = "card-icon", "🏃"),
+              div(class = "card-title", "Activities"),
+              div(class = "card-value", activity_count),
+              div(class = "card-subtitle", "unique categories")
+          ),
+          if(avg_breathing != "N/A") {
+            div(class = "overview-card",
+                span(class = "card-icon", "🫁"),
+                div(class = "card-title", "Breathing Rate"),
+                div(class = "card-value", avg_breathing),
+                div(class = "card-subtitle", "breaths/min average")
+            )
+          }
+      )
+    )
+  })
+  
+  # Generate charts for custom range
+  observe({
+    req(input$custom_file, input$custom_date, input$custom_end_date, full_data)
+    start_date <- as.Date(input$custom_date)
+    end_date <- as.Date(input$custom_end_date)
+    
+    # Filter data
+    df <- full_data[!is.na(full_data$Date) & 
+                      full_data$Date >= start_date & 
+                      full_data$Date <= end_date, ]
+    
+    output$custom_charts <- renderUI({
+      if(nrow(df) > 0) {
+        HTML(generate_interactive_charts(df, "custom"))
+      } else {
+        NULL
+      }
+    })
   })
 }
 
