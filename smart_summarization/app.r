@@ -36,6 +36,36 @@ ui <- fluidPage(
         padding: 0;
       }
       
+      .language-selector-container {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        z-index: 1000;
+        animation: fadeIn 1s ease-out 0.3s both;
+      }
+      
+      .language-selector {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 12px 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      .language-selector:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+      
       .main-title-container {
         background: transparent;
         padding: 60px 0 40px 0;
@@ -81,6 +111,8 @@ ui <- fluidPage(
         opacity: 0;
         transform: translateX(-30px);
         animation: slideInLeft 0.8s ease forwards;
+        text-align: left;
+        justify-content: flex-start;
       }
       
       .feature-item:nth-child(1) { animation-delay: 0.2s; }
@@ -107,6 +139,7 @@ ui <- fluidPage(
         box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
         animation: pulse 2s ease infinite;
         flex-shrink: 0;
+        align-self: flex-start;
       }
       
       @keyframes pulse {
@@ -121,6 +154,8 @@ ui <- fluidPage(
         line-height: 1.6;
         text-shadow: 0 2px 8px rgba(0,0,0,0.2);
         letter-spacing: 0.3px;
+        text-align: left;
+        flex: 1;
       }
       
       .start-button-container {
@@ -467,6 +502,10 @@ ui <- fluidPage(
         text-align: center;
         margin: 40px 0 20px 0;
         animation: fadeInScale 1s ease-out 1.2s both;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
       }
       
       @keyframes fadeInScale {
@@ -481,9 +520,9 @@ ui <- fluidPage(
       }
       
       .generate-summary-btn {
-        min-width: 220px;
+        min-width: 200px;
         height: 60px;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
@@ -498,7 +537,26 @@ ui <- fluidPage(
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
-      .generate-summary-btn::before {
+      .generate-llm-btn {
+        min-width: 200px;
+        height: 60px;
+        font-size: 16px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        border: none;
+        border-radius: 30px;
+        color: white;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        transform: translateY(0);
+        letter-spacing: 0.5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .generate-summary-btn::before,
+      .generate-llm-btn::before {
         content: '';
         position: absolute;
         top: 0;
@@ -515,13 +573,47 @@ ui <- fluidPage(
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
       }
       
-      .generate-summary-btn:hover::before {
+      .generate-llm-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6);
+        background: linear-gradient(135deg, #ee5a24 0%, #ff6b6b 100%);
+      }
+      
+      .generate-summary-btn:hover::before,
+      .generate-llm-btn:hover::before {
         left: 100%;
       }
       
-      .generate-summary-btn:active {
+      .generate-summary-btn:active,
+      .generate-llm-btn:active {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
+      }
+      
+      .summary-output {
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 100%);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 800px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        font-size: 16px;
+        line-height: 1.6;
+        color: #2c3e50;
+        animation: summarySlideIn 0.6s ease-out;
+        text-align: left;
+      }
+      
+      @keyframes summarySlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
       
       .btn-secondary {
@@ -865,10 +957,16 @@ ui <- fluidPage(
           font-size: 18px;
         }
         
-        .generate-summary-btn {
-          min-width: 200px;
+        .generate-summary-btn,
+        .generate-llm-btn {
+          min-width: 180px;
           height: 55px;
-          font-size: 16px;
+          font-size: 14px;
+        }
+        
+        .generate-summary-container {
+          flex-direction: column;
+          gap: 15px;
         }
         
         .content-card {
@@ -909,9 +1007,15 @@ ui <- fluidPage(
           padding: 0 10px;
         }
         
-        .file-input-large input[type='file'] {
-          height: 70px;
-          padding: 20px;
+        .language-selector-container {
+          top: 20px;
+          right: 20px;
+        }
+        
+        .language-selector-container select {
+          min-width: 120px;
+          font-size: 13px;
+          padding: 10px 15px;
         }
       }
     "))
@@ -922,6 +1026,180 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   page <- reactiveVal("main")
   previous_page <- reactiveVal("main")
+  selected_language <- reactiveVal("en")
+  
+  # Translation dictionary
+  translations <- list(
+    en = list(
+      # Main page
+      main_title = "NCHacks Pulspanion",
+      feature_1 = "Track, analyze, and visualize heart rate and wellness data in real time",
+      feature_2 = "Monitor daily vitals, manage conditions, or optimize fitness performance",
+      feature_3 = "Intuitive dashboards and personalized insights",
+      feature_4 = "Seamless integration with .csv health records",
+      feature_5 = "Advanced trend tracking and customizable reports",
+      feature_6 = "Empowers users to stay informed and take control of their health",
+      start_button = "🚀 Start Analysis",
+      language_selector = "🌐 Language",
+      
+      # Analysis page
+      analysis_title = "Health Data Analysis",
+      upload_label = "Upload CSV File:",
+      start_date = "Start Date:",
+      end_date = "End Date:",
+      show_all_data = "📊 Show All Data",
+      back_button = "← Back",
+      
+      # Overview
+      overview_title = "Data Overview",
+      overview_subtitle = "Summary of your health metrics for the selected period",
+      total_records = "Total Records",
+      heart_rate = "Heart Rate",
+      sleep_average = "Sleep Average",
+      activities = "Activities",
+      breathing_rate = "Breathing Rate",
+      data_span = "Data Span",
+      
+      # Summary
+      generate_text_summary = "📝 Generate Text Summary",
+      generate_llm_summary = "🤖 Generate LLM Summary",
+      summary_title = "📋 Health Data Summary",
+      
+      # All data page
+      complete_dataset_title = "Complete Dataset Overview",
+      complete_analysis_title = "Complete Dataset Analysis",
+      complete_summary_title = "📋 Complete Health Data Summary",
+      comprehensive_subtitle = "Comprehensive summary of all health data in your dataset",
+      back_to_analysis = "← Back to Analysis",
+      
+      # Units and descriptors
+      data_points = "data points analyzed",
+      per_night = "per night",
+      unique_categories = "unique categories",
+      average_bpm = "Average BPM",
+      range_bpm = "Range: %s BPM",
+      breaths_min = "breaths/min average",
+      total_days = "days",
+      total_time_period = "total time period",
+      valid_dates_percent = "%s%% with valid dates",
+      
+      # Summary text components
+      analysis_of = "Analysis of %s health records",
+      from_period = "from %s",
+      hr_averaged = "Heart rate averaged %s BPM, %s with readings ranging from %s to %s BPM.",
+      hr_normal = "within normal range",
+      hr_low = "below normal range (bradycardia)",
+      hr_high = "above normal range (tachycardia)",
+      sleep_averaged = "Sleep duration averaged %s hours per night, %s for healthy adults.",
+      sleep_recommended = "meeting recommended guidelines",
+      sleep_low = "below recommended 7-9 hours",
+      sleep_high = "above typical range",
+      deep_sleep = "Deep sleep accounted for %s hours (%s%%) of total sleep.",
+      activities_engaged = "Patient engaged in %s different activity types, with %s being the most frequently recorded activity.",
+      breathing_averaged = "Breathing rate averaged %s breaths per minute, %s for a healthy adult at rest.",
+      breathing_normal = "within normal range",
+      breathing_low = "below normal range",
+      breathing_high = "above normal range",
+      overall_indicates = "Overall, the data indicates %s during this period.",
+      normal_heart_rate = "normal heart rate",
+      adequate_sleep = "adequate sleep duration",
+      normal_breathing = "normal breathing rate",
+      no_data_available = "No data available for the selected time period.",
+      no_data_found = "No Data Found",
+      no_records_message = "No records available for the selected date range."
+    ),
+    es = list(
+      # Main page
+      main_title = "NCHacks Pulspanion",
+      feature_1 = "Rastrea, analiza y visualiza datos de ritmo cardíaco y bienestar en tiempo real",
+      feature_2 = "Monitorea signos vitales diarios, maneja condiciones u optimiza el rendimiento físico",
+      feature_3 = "Paneles intuitivos e insights personalizados",
+      feature_4 = "Integración perfecta con registros de salud .csv",
+      feature_5 = "Seguimiento avanzado de tendencias e informes personalizables",
+      feature_6 = "Empodera a los usuarios para mantenerse informados y tomar control de su salud",
+      start_button = "🚀 Iniciar Análisis",
+      language_selector = "🌐 Idioma",
+      
+      # Analysis page
+      analysis_title = "Análisis de Datos de Salud",
+      upload_label = "Subir Archivo CSV:",
+      start_date = "Fecha de Inicio:",
+      end_date = "Fecha de Fin:",
+      show_all_data = "📊 Mostrar Todos los Datos",
+      back_button = "← Atrás",
+      
+      # Overview
+      overview_title = "Resumen de Datos",
+      overview_subtitle = "Resumen de sus métricas de salud para el período seleccionado",
+      total_records = "Registros Totales",
+      heart_rate = "Ritmo Cardíaco",
+      sleep_average = "Promedio de Sueño",
+      activities = "Actividades",
+      breathing_rate = "Frecuencia Respiratoria",
+      data_span = "Período de Datos",
+      
+      # Summary
+      generate_text_summary = "📝 Generar Resumen de Texto",
+      generate_llm_summary = "🤖 Generar Resumen LLM",
+      summary_title = "📋 Resumen de Datos de Salud",
+      
+      # All data page
+      complete_dataset_title = "Resumen Completo del Dataset",
+      complete_analysis_title = "Análisis Completo del Dataset",
+      complete_summary_title = "📋 Resumen Completo de Datos de Salud",
+      comprehensive_subtitle = "Resumen integral de todos los datos de salud en su dataset",
+      back_to_analysis = "← Volver al Análisis",
+      
+      # Units and descriptors
+      data_points = "puntos de datos analizados",
+      per_night = "por noche",
+      unique_categories = "categorías únicas",
+      average_bpm = "LPM Promedio",
+      range_bpm = "Rango: %s LPM",
+      breaths_min = "respiraciones/min promedio",
+      total_days = "días",
+      total_time_period = "período total de tiempo",
+      valid_dates_percent = "%s%% con fechas válidas",
+      
+      # Summary text components
+      analysis_of = "Análisis de %s registros de salud",
+      from_period = "desde %s",
+      hr_averaged = "El ritmo cardíaco promedió %s LPM, %s con lecturas que van desde %s hasta %s LPM.",
+      hr_normal = "dentro del rango normal",
+      hr_low = "por debajo del rango normal (bradicardia)",
+      hr_high = "por encima del rango normal (taquicardia)",
+      sleep_averaged = "La duración del sueño promedió %s horas por noche, %s para adultos saludables.",
+      sleep_recommended = "cumpliendo las recomendaciones",
+      sleep_low = "por debajo de las 7-9 horas recomendadas",
+      sleep_high = "por encima del rango típico",
+      deep_sleep = "El sueño profundo representó %s horas (%s%%) del sueño total.",
+      activities_engaged = "El paciente participó en %s tipos diferentes de actividades, siendo %s la actividad registrada con mayor frecuencia.",
+      breathing_averaged = "La frecuencia respiratoria promedió %s respiraciones por minuto, %s para un adulto saludable en reposo.",
+      breathing_normal = "dentro del rango normal",
+      breathing_low = "por debajo del rango normal",
+      breathing_high = "por encima del rango normal",
+      overall_indicates = "En general, los datos indican %s durante este período.",
+      normal_heart_rate = "ritmo cardíaco normal",
+      adequate_sleep = "duración adecuada de sueño",
+      normal_breathing = "frecuencia respiratoria normal",
+      no_data_available = "No hay datos disponibles para el período de tiempo seleccionado.",
+      no_data_found = "No se Encontraron Datos",
+      no_records_message = "No hay registros disponibles para el rango de fechas seleccionado."
+    )
+  )
+  
+  # Helper function to get translated text
+  t <- function(key, ...) {
+    lang <- selected_language()
+    text <- translations[[lang]][[key]]
+    if(is.null(text)) {
+      text <- translations[["en"]][[key]]  # Fallback to English
+    }
+    if(length(list(...)) > 0) {
+      return(sprintf(text, ...))
+    }
+    return(text)
+  }
   
   # Function to process uploaded CSV
   process_csv <- function(file_path) {
@@ -1534,35 +1812,42 @@ server <- function(input, output, session) {
   mainPageUI <- function() {
     tagList(
       div(class = "main-title-container",
-          div(class = "main-title", "NCHacks Pulspanion"),
+          div(class = "language-selector-container",
+              selectInput("language_select", 
+                         label = NULL,
+                         choices = list("🇺🇸 English" = "en", "🇪🇸 Español" = "es"),
+                         selected = selected_language(),
+                         width = "120px")
+          ),
+          div(class = "main-title", t("main_title")),
           div(class = "features-container",
               div(class = "feature-item",
                   div(class = "bullet-point"),
-                  div(class = "feature-text", "Track, analyze, and visualize heart rate and wellness data in real time")
+                  div(class = "feature-text", t("feature_1"))
               ),
               div(class = "feature-item",
                   div(class = "bullet-point"),
-                  div(class = "feature-text", "Monitor daily vitals, manage conditions, or optimize fitness performance")
+                  div(class = "feature-text", t("feature_2"))
               ),
               div(class = "feature-item",
                   div(class = "bullet-point"),
-                  div(class = "feature-text", "Intuitive dashboards and personalized insights")
+                  div(class = "feature-text", t("feature_3"))
               ),
               div(class = "feature-item",
                   div(class = "bullet-point"),
-                  div(class = "feature-text", "Seamless integration with .csv health records")
+                  div(class = "feature-text", t("feature_4"))
               ),
               div(class = "feature-item",
                   div(class = "bullet-point"),
-                  div(class = "feature-text", "Advanced trend tracking and customizable reports")
+                  div(class = "feature-text", t("feature_5"))
               ),
               div(class = "feature-item",
                   div(class = "bullet-point"),
-                  div(class = "feature-text", "Empowers users to stay informed and take control of their health")
+                  div(class = "feature-text", t("feature_6"))
               )
           ),
           div(class = "start-button-container",
-              actionButton("start_btn", "🚀 Start Analysis", class = "start-btn")
+              actionButton("start_btn", t("start_button"), class = "start-btn")
           )
       )
     )
@@ -1571,35 +1856,37 @@ server <- function(input, output, session) {
   customPageUI <- function() {
     tagList(
       div(class = "page-title-container",
-          div(class = "page-title", "Health Data Analysis")
+          div(class = "page-title", t("analysis_title"))
       ),
       div(class = "content-card",
           div(class = "file-input-container",
               div(class = "file-input-large",
-                  fileInput("custom_file", "Upload CSV File:", accept = ".csv")
+                  fileInput("custom_file", t("upload_label"), accept = ".csv")
               )
           ),
           conditionalPanel(
             condition = "output.file_uploaded",
             div(class = "date-input-container",
                 div(class = "date-input-large",
-                    dateInput("custom_date", "Start Date:", format = "mm-dd-yyyy")
+                    dateInput("custom_date", t("start_date"), format = "mm-dd-yyyy")
                 ),
                 div(class = "date-input-large",
-                    dateInput("custom_end_date", "End Date:", format = "mm-dd-yyyy")
+                    dateInput("custom_end_date", t("end_date"), format = "mm-dd-yyyy")
                 )
             ),
             div(class = "show-all-data-container",
-                actionButton("show_all_data", "📊 Show All Data", class = "btn-info")
+                actionButton("show_all_data", t("show_all_data"), class = "btn-info")
             )
           ),
           uiOutput("custom_overview"),
           uiOutput("custom_charts"),
+          uiOutput("custom_summary"),
           div(class = "generate-summary-container",
-              actionButton("generate_summary_custom", "✨ Generate Summary", class = "generate-summary-btn")
+              actionButton("generate_text_summary_custom", t("generate_text_summary"), class = "generate-summary-btn"),
+              actionButton("generate_llm_summary_custom", t("generate_llm_summary"), class = "generate-llm-btn")
           ),
           br(),
-          actionButton("back_custom", "← Back", class = "btn-secondary")
+          actionButton("back_custom", t("back_button"), class = "btn-secondary")
       )
     )
   }
@@ -1607,19 +1894,26 @@ server <- function(input, output, session) {
   allDataPageUI <- function() {
     tagList(
       div(class = "page-title-container",
-          div(class = "page-title", "Complete Dataset Overview")
+          div(class = "page-title", t("complete_dataset_title"))
       ),
       div(class = "content-card",
           uiOutput("all_data_overview"),
           uiOutput("all_data_charts"),
+          uiOutput("all_data_summary"),
           div(class = "generate-summary-container",
-              actionButton("generate_summary_all", "✨ Generate Summary", class = "generate-summary-btn")
+              actionButton("generate_text_summary_all", t("generate_text_summary"), class = "generate-summary-btn"),
+              actionButton("generate_llm_summary_all", t("generate_llm_summary"), class = "generate-llm-btn")
           ),
           br(),
-          actionButton("back_all_data", "← Back to Analysis", class = "btn-secondary")
+          actionButton("back_all_data", t("back_to_analysis"), class = "btn-secondary")
       )
     )
   }
+  
+  # Language selection observer
+  observeEvent(input$language_select, {
+    selected_language(input$language_select)
+  })
   
   # Navigation
   observeEvent(input$start_btn, { page("custom") })
@@ -1634,13 +1928,139 @@ server <- function(input, output, session) {
     page(previous_page()) 
   })
   
-  # Generate Summary button handlers (placeholder functionality)
-  observeEvent(input$generate_summary_custom, {
-    showNotification("✨ Summary generation feature coming soon!", type = "message", duration = 3)
+  # Function to generate text summary
+  generate_text_summary <- function(df, date_range_text) {
+    if(nrow(df) == 0) {
+      return(t("no_data_available"))
+    }
+    
+    summary_parts <- c()
+    
+    # Basic stats
+    total_records <- nrow(df)
+    summary_parts <- c(summary_parts, t("analysis_of", total_records))
+    if(date_range_text != "") {
+      summary_parts <- c(summary_parts, t("from_period", date_range_text))
+    }
+    
+    # Heart rate analysis
+    if(!all(is.na(df$hr_avg))) {
+      avg_hr <- round(mean(df$hr_avg, na.rm = TRUE), 0)
+      min_hr <- round(min(df$hr_min, na.rm = TRUE), 0)
+      max_hr <- round(max(df$hr_max, na.rm = TRUE), 0)
+      
+      hr_assessment <- if(avg_hr >= 60 && avg_hr <= 100) t("hr_normal") else 
+                      if(avg_hr < 60) t("hr_low") else t("hr_high")
+      
+      summary_parts <- c(summary_parts, t("hr_averaged", avg_hr, hr_assessment, min_hr, max_hr))
+    }
+    
+    # Sleep analysis
+    if(!all(is.na(df$sleep_total))) {
+      avg_sleep <- round(mean(df$sleep_total, na.rm = TRUE), 1)
+      sleep_assessment <- if(avg_sleep >= 7 && avg_sleep <= 9) t("sleep_recommended") else 
+                         if(avg_sleep < 7) t("sleep_low") else t("sleep_high")
+      
+      summary_parts <- c(summary_parts, t("sleep_averaged", avg_sleep, sleep_assessment))
+      
+      if(!all(is.na(df$sleep_deep))) {
+        avg_deep <- round(mean(df$sleep_deep, na.rm = TRUE), 1)
+        deep_percentage <- round((avg_deep / avg_sleep) * 100, 0)
+        summary_parts <- c(summary_parts, t("deep_sleep", avg_deep, deep_percentage))
+      }
+    }
+    
+    # Activity analysis
+    if(!all(is.na(df$act_cat))) {
+      activities <- table(df$act_cat[!is.na(df$act_cat)])
+      activity_count <- length(activities)
+      most_common <- names(activities)[which.max(activities)]
+      
+      summary_parts <- c(summary_parts, t("activities_engaged", activity_count, most_common))
+    }
+    
+    # Breathing rate analysis
+    if(!all(is.na(df$br_avg))) {
+      avg_breathing <- round(mean(df$br_avg, na.rm = TRUE), 1)
+      breathing_assessment <- if(avg_breathing >= 12 && avg_breathing <= 20) t("breathing_normal") else 
+                             if(avg_breathing < 12) t("breathing_low") else t("breathing_high")
+      
+      summary_parts <- c(summary_parts, t("breathing_averaged", avg_breathing, breathing_assessment))
+    }
+    
+    # Overall assessment
+    health_indicators <- c()
+    if(!all(is.na(df$hr_avg)) && mean(df$hr_avg, na.rm = TRUE) >= 60 && mean(df$hr_avg, na.rm = TRUE) <= 100) {
+      health_indicators <- c(health_indicators, t("normal_heart_rate"))
+    }
+    if(!all(is.na(df$sleep_total)) && mean(df$sleep_total, na.rm = TRUE) >= 7 && mean(df$sleep_total, na.rm = TRUE) <= 9) {
+      health_indicators <- c(health_indicators, t("adequate_sleep"))
+    }
+    if(!all(is.na(df$br_avg)) && mean(df$br_avg, na.rm = TRUE) >= 12 && mean(df$br_avg, na.rm = TRUE) <= 20) {
+      health_indicators <- c(health_indicators, t("normal_breathing"))
+    }
+    
+    if(length(health_indicators) > 0) {
+      summary_parts <- c(summary_parts, t("overall_indicates", paste(health_indicators, collapse = ", ")))
+    }
+    
+    return(paste(summary_parts, collapse = " "))
+  }
+  
+  # Generate Summary button handlers
+  observeEvent(input$generate_text_summary_custom, {
+    req(input$custom_file, input$custom_date, input$custom_end_date, full_data)
+    start_date <- as.Date(input$custom_date)
+    end_date <- as.Date(input$custom_end_date)
+    
+    # Filter data
+    df <- full_data[!is.na(full_data$Date) & 
+                      full_data$Date >= start_date & 
+                      full_data$Date <= end_date, ]
+    
+    date_range_text <- paste(format(start_date, "%B %d, %Y"), "to", format(end_date, "%B %d, %Y"))
+    summary_text <- generate_text_summary(df, date_range_text)
+    
+    output$custom_summary <- renderUI({
+      div(class = "summary-output",
+          h3(t("summary_title")),
+          p(summary_text)
+      )
+    })
   })
   
-  observeEvent(input$generate_summary_all, {
-    showNotification("✨ Summary generation feature coming soon!", type = "message", duration = 3)
+  observeEvent(input$generate_text_summary_all, {
+    req(full_data)
+    
+    # Use entire dataset
+    df <- full_data
+    
+    # Create date range text for full dataset
+    date_range_text <- if(sum(!is.na(full_data$Date)) > 0) {
+      min_date <- min(full_data$Date, na.rm = TRUE)
+      max_date <- max(full_data$Date, na.rm = TRUE)
+      paste(format(min_date, "%B %d, %Y"), "to", format(max_date, "%B %d, %Y"))
+    } else {
+      ""
+    }
+    
+    summary_text <- generate_text_summary(df, date_range_text)
+    
+    output$all_data_summary <- renderUI({
+      div(class = "summary-output",
+          h3(t("complete_summary_title")),
+          p(summary_text)
+      )
+    })
+  })
+  
+  # LLM Summary button handlers (placeholder functionality)
+  observeEvent(input$generate_llm_summary_custom, {
+    # Button does nothing - placeholder only
+  })
+  
+  observeEvent(input$generate_llm_summary_all, {
+    # Button does nothing - placeholder only
   })
   
   # File upload handlers
@@ -1663,7 +2083,7 @@ server <- function(input, output, session) {
     if (nrow(full_data) == 0) {
       return(
         div(class = "overview-header",
-            h2("No Data Available"),
+            h2(t("no_data_found")),
             p("Please upload a CSV file to begin analysis.")
         )
       )
@@ -1702,63 +2122,61 @@ server <- function(input, output, session) {
     
     tagList(
       div(class = "overview-header",
-          h2("Complete Dataset Analysis"),
-          p("Comprehensive summary of all health data in your dataset"),
+          h2(t("complete_analysis_title")),
+          p(t("comprehensive_subtitle")),
           div(class = "date-range-badge", date_range_text)
       ),
       div(class = "overview-container",
           div(class = "overview-card",
               span(class = "card-icon", "📊"),
-              div(class = "card-title", "Total Records"),
+              div(class = "card-title", t("total_records")),
               div(class = "card-value", total_records),
-              div(class = "card-subtitle", paste(completeness, "% with valid dates"))
+              div(class = "card-subtitle", t("valid_dates_percent", completeness))
           ),
           div(class = "overview-card",
               span(class = "card-icon", "💓"),
-              div(class = "card-title", "Heart Rate"),
+              div(class = "card-title", t("heart_rate")),
               div(class = "card-value", avg_hr),
-              div(class = "card-subtitle", if(hr_range != "N/A") paste("Range:", hr_range, "BPM") else "Average BPM")
+              div(class = "card-subtitle", if(hr_range != "N/A") t("range_bpm", hr_range) else t("average_bpm"))
           ),
           div(class = "overview-card",
               span(class = "card-icon", "😴"),
-              div(class = "card-title", "Sleep Average"),
+              div(class = "card-title", t("sleep_average")),
               div(class = "card-value", avg_sleep),
-              div(class = "card-subtitle", "per night")
+              div(class = "card-subtitle", t("per_night"))
           ),
           div(class = "overview-card",
               span(class = "card-icon", "🏃"),
-              div(class = "card-title", "Activities"),
+              div(class = "card-title", t("activities")),
               div(class = "card-value", activity_count),
-              div(class = "card-subtitle", "unique categories")
+              div(class = "card-subtitle", t("unique_categories"))
           ),
           if(avg_breathing != "N/A") {
             div(class = "overview-card",
                 span(class = "card-icon", "🫁"),
-                div(class = "card-title", "Breathing Rate"),
+                div(class = "card-title", t("breathing_rate")),
                 div(class = "card-value", avg_breathing),
-                div(class = "card-subtitle", "breaths/min average")
+                div(class = "card-subtitle", t("breaths_min"))
             )
           },
           div(class = "overview-card",
               span(class = "card-icon", "📅"),
-              div(class = "card-title", "Data Span"),
-              div(class = "card-value", if(valid_dates > 0) paste(as.numeric(difftime(max(full_data$Date, na.rm = TRUE), min(full_data$Date, na.rm = TRUE), units = "days")), "days") else "N/A"),
-              div(class = "card-subtitle", "total time period")
+              div(class = "card-title", t("data_span")),
+              div(class = "card-value", if(valid_dates > 0) paste(as.numeric(difftime(max(full_data$Date, na.rm = TRUE), min(full_data$Date, na.rm = TRUE), units = "days")), t("total_days")) else "N/A"),
+              div(class = "card-subtitle", t("total_time_period"))
           )
       )
     )
   })
   
   # Generate charts for all data
-  observe({
+  output$all_data_charts <- renderUI({
     req(full_data)
-    output$all_data_charts <- renderUI({
-      if(nrow(full_data) > 0) {
-        HTML(generate_interactive_charts(full_data, "alldata"))
-      } else {
-        NULL
-      }
-    })
+    if(nrow(full_data) > 0) {
+      HTML(generate_interactive_charts(full_data, "alldata"))
+    } else {
+      NULL
+    }
   })
   
   # Modern overview for Custom date range
@@ -1775,10 +2193,10 @@ server <- function(input, output, session) {
     if (nrow(df) == 0) {
       return(
         div(class = "overview-header",
-            h2("No Data Found"),
-            p("No records available for the selected date range."),
+            h2(t("no_data_found")),
+            p(t("no_records_message")),
             div(class = "date-range-badge",
-                paste("Selected:", format(start_date, "%m/%d/%Y"), "-", format(end_date, "%m/%d/%Y"))
+                paste(format(start_date, "%m/%d/%Y"), "-", format(end_date, "%m/%d/%Y"))
             )
         )
       )
@@ -1805,41 +2223,41 @@ server <- function(input, output, session) {
     
     tagList(
       div(class = "overview-header",
-          h2("Data Overview"),
-          p("Summary of your health metrics for the selected period"),
+          h2(t("overview_title")),
+          p(t("overview_subtitle")),
           div(class = "date-range-badge", date_range_text)
       ),
       div(class = "overview-container",
           div(class = "overview-card",
               span(class = "card-icon", "📊"),
-              div(class = "card-title", "Total Records"),
+              div(class = "card-title", t("total_records")),
               div(class = "card-value", total_records),
-              div(class = "card-subtitle", "data points analyzed")
+              div(class = "card-subtitle", t("data_points"))
           ),
           div(class = "overview-card",
               span(class = "card-icon", "💓"),
-              div(class = "card-title", "Heart Rate"),
+              div(class = "card-title", t("heart_rate")),
               div(class = "card-value", avg_hr),
-              div(class = "card-subtitle", if(hr_range != "N/A") paste("Range:", hr_range, "BPM") else "Average BPM")
+              div(class = "card-subtitle", if(hr_range != "N/A") t("range_bpm", hr_range) else t("average_bpm"))
           ),
           div(class = "overview-card",
               span(class = "card-icon", "😴"),
-              div(class = "card-title", "Sleep Average"),
+              div(class = "card-title", t("sleep_average")),
               div(class = "card-value", avg_sleep),
-              div(class = "card-subtitle", "per night")
+              div(class = "card-subtitle", t("per_night"))
           ),
           div(class = "overview-card",
               span(class = "card-icon", "🏃"),
-              div(class = "card-title", "Activities"),
+              div(class = "card-title", t("activities")),
               div(class = "card-value", activity_count),
-              div(class = "card-subtitle", "unique categories")
+              div(class = "card-subtitle", t("unique_categories"))
           ),
           if(avg_breathing != "N/A") {
             div(class = "overview-card",
                 span(class = "card-icon", "🫁"),
-                div(class = "card-title", "Breathing Rate"),
+                div(class = "card-title", t("breathing_rate")),
                 div(class = "card-value", avg_breathing),
-                div(class = "card-subtitle", "breaths/min average")
+                div(class = "card-subtitle", t("breaths_min"))
             )
           }
       )
