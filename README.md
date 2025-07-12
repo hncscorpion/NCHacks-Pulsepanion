@@ -4,7 +4,7 @@ Smart Summarization is a lightweight, AI-assisted tool designed to help caregive
 
 ## Features
 
-- Selectable date ranges (e.g., today, last 7 days, custom range)
+- Selectable date ranges (e.g 07-011-2024, 07-011-2025)
 - AI-based summarization using GPT or rule-based logic
 - Downloadable reports in PDF format
 - Simple, caregiver-friendly UI built with Streamlit
