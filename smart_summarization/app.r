@@ -7,6 +7,7 @@ library(readr)
 library(tidyr)
 library(dplyr)
 library(reticulate)
+library(rmarkdown) 
 
 # Set Python environment and load the summarization script
 use_python("/opt/anaconda3/bin/python", required = TRUE)
@@ -1038,6 +1039,8 @@ ui <- fluidPage(
     "))
   ),
   uiOutput("main_ui")
+  
+  
 )
 
 server <- function(input, output, session) {
@@ -1058,7 +1061,7 @@ server <- function(input, output, session) {
       feature_6 = "Empowers users to stay informed and take control of their health",
       start_button = "🚀 Start Analysis",
       language_selector = "🌐 Language",
-      
+
       # Analysis page
       analysis_title = "Health Data Analysis",
       upload_label = "Upload CSV File:",
@@ -1202,6 +1205,7 @@ server <- function(input, output, session) {
       no_data_available = "No hay datos disponibles para el período de tiempo seleccionado.",
       no_data_found = "No se Encontraron Datos",
       no_records_message = "No hay registros disponibles para el rango de fechas seleccionado."
+      
     )
   )
   
@@ -1870,14 +1874,13 @@ server <- function(input, output, session) {
     )
   }
   
-  
   customPageUI <- function() {
     tagList(
       div(class = "page-title-container",
           div(class = "page-title", t("analysis_title"))
       ),
       div(class = "content-card",
-          div(class = "file-input-container",
+          div(class = "file-input-container", style = "text-align: center;",
               div(class = "file-input-large",
                   fileInput("custom_file", t("upload_label"), accept = ".csv")
               )
@@ -1899,12 +1902,18 @@ server <- function(input, output, session) {
           uiOutput("custom_overview"),
           uiOutput("custom_charts"),
           uiOutput("custom_summary"),
+          
           div(class = "generate-summary-container",
               actionButton("generate_text_summary_custom", t("generate_text_summary"), class = "generate-summary-btn"),
               actionButton("generate_llm_summary_custom", t("generate_llm_summary"), class = "generate-llm-btn")
           ),
           br(),
-          actionButton("back_custom", t("back_button"), class = "btn-secondary")
+          
+          actionButton("back_custom", t("back_button"), class = "btn-secondary"),
+          
+          div(style = "text-align: center;",
+              downloadButton("download_summary_pdf", "Download Summary PDF")
+          )
       )
     )
   }
@@ -2038,6 +2047,7 @@ server <- function(input, output, session) {
     
     date_range_text <- paste(format(start_date, "%B %d, %Y"), "to", format(end_date, "%B %d, %Y"))
     summary_text <- generate_text_summary(df, date_range_text)
+    global_summary(summary_text)
     
     output$custom_summary <- renderUI({
       div(class = "summary-output",
@@ -2063,6 +2073,7 @@ server <- function(input, output, session) {
     }
     
     summary_text <- generate_text_summary(df, date_range_text)
+    global_summary(summary_text)
     
     output$all_data_summary <- renderUI({
       div(class = "summary-output",
@@ -2317,8 +2328,7 @@ server <- function(input, output, session) {
       )
     )
   })
-  
-  # Generate charts for custom range
+
   observe({
     req(input$custom_file, input$custom_date, input$custom_end_date, full_data)
     start_date <- as.Date(input$custom_date)
@@ -2337,9 +2347,8 @@ server <- function(input, output, session) {
       }
     })
   })
-}
-
-       # Download summary PDF handler
+  
+  # Download summary PDF handler
   output$download_summary_pdf <- downloadHandler(
     filename = function() {
       paste0("health_summary_", Sys.Date(), ".pdf")
