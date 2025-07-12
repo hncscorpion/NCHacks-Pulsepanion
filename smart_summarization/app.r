@@ -2339,4 +2339,37 @@ server <- function(input, output, session) {
   })
 }
 
+       # Download summary PDF handler
+  output$download_summary_pdf <- downloadHandler(
+    filename = function() {
+      paste0("health_summary_", Sys.Date(), ".pdf")
+    },
+    content = function(file) {
+      # Here you generate the PDF file with the summary
+      # For example, you can use rmarkdown::render or other pdf generating methods
+      # As a minimal example, write the summary text to a plain text PDF
+      # You can replace this with your actual PDF generation code
+      library(rmarkdown)
+      tempReport <- tempfile(fileext = ".Rmd")
+      cat(
+        "---
+output: pdf_document
+---
+
+# Health Data Summary
+
+", global_summary(), file = tempReport)
+      
+      rmarkdown::render(
+        tempReport,
+        output_file = file,
+        output_format = "pdf_document",
+        params = list(summary_text = global_summary()),
+        envir = new.env(parent = globalenv()),
+        quiet = TRUE
+      )
+    }
+  )
+}
+
 shinyApp(ui, server)
