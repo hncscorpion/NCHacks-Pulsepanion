@@ -12,7 +12,6 @@ Smart Summarization is a lightweight, AI-assisted tool designed to help caregive
 ## Tech Stack
 
 - Python (pandas, OpenAI API)
-- PDF generation: pdfkit or WeasyPrint
 - Version control: Git + GitHub
 
 ## Project Goal
