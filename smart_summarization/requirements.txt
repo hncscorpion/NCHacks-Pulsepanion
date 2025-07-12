@@ -1,6 +1,20 @@
+# Python
 pandas
 numpy
 matplotlib
 scikit-learn
 plotly
 openai
+
+# R
+install.packages(c(
+  "shiny",
+  "shinyWidgets",
+  "jsonlite",
+  "ggplot2",
+  "readr",
+  "tidyr",
+  "dplyr",
+  "reticulate",
+  "rmarkdown"
+))
