@@ -1,8 +1,7 @@
 from openai import OpenAI
 import pandas as pd
 
-client = OpenAI(api_key="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")
-
+client = OpenAI(api_key="")
 def generate_llm_summary(json_data: str, start_date: str, end_date: str, date_column: str = "date") -> str:
     """
     Generate a caregiver-friendly summary from health data JSON between given dates.
